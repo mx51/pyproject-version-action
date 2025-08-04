@@ -37,7 +37,7 @@ check-lint:
 
 ## Perform mypy check
 check-type:
-	. .venv/bin/activate && mypy app tests
+	. .venv/bin/activate && mypy .
 .PHONY: check-type
 
 
