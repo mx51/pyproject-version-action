@@ -1,0 +1,26 @@
+# TODO - this will be moved to Azure Devops
+on:
+  push:
+    branches:
+      - master
+
+  pull_request:
+    types: [ opened, synchronize, reopened, closed, edited ]
+    branches:
+      - master
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    name: checks
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: make venv
+        run: make venv
+
+      - name: make check
+        run: make check
+
+      - name: make test
+        run: make test

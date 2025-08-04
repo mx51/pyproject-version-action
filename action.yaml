@@ -1,0 +1,23 @@
+name: "PyProject Version Action"
+description: "Ensures the next Git tag version in pyproject.toml aligns with label used in Pull-Request title."
+
+inputs:
+  repo-token:
+    description: "A github token for API access"
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: Setup Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.13'
+
+    - run: pip install -r ${{ github.action_path }}/requirements.txt
+      shell: bash
+
+    - run: ${{ github.action_path }}/action.py
+      shell: bash
+      env:
+        GITHUB_TOKEN: ${{ inputs.repo-token }}

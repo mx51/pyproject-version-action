@@ -1,0 +1,22 @@
+# Python artefacts
+.venv/
+*.pyc
+.pytest_cache/
+.coverage
+reports/
+build/
+*.egg-info
+container-image-scan/
+cs-report.json
+*_scan_results.json
+
+# IDE
+.idea/
+.vscode/
+
+# Misc
+.local
+working/
+TODO.md
+*.bak
+.claude/
