@@ -113,7 +113,9 @@ def increment_tag(git_describe, position):
 def git_describe_version():
     # Read tag using git describe
     repo = Repo()
-    git_tag = repo.git.describe("--abbrev=0", "--tags", "--match=v*.*.*")
+    git_tag = repo.git.describe(
+        "--abbrev=0", "--tags", "--match=v*.*.*", "--exclude=*/*"
+    )
 
     # String 'v' character
     return git_tag.replace("v", "")

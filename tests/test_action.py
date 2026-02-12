@@ -109,7 +109,7 @@ class TestGitDescribeVersion:
         result = action.git_describe_version()
         assert result == "1.2.3"
         mock_git.describe.assert_called_once_with(
-            "--abbrev=0", "--tags", "--match=v*.*.*"
+            "--abbrev=0", "--tags", "--match=v*.*.*", "--exclude=*/*"
         )
 
 
