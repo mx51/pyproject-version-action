@@ -114,7 +114,11 @@ def git_describe_version():
     # Read tag using git describe
     repo = Repo()
     git_tag = repo.git.describe(
-        "--abbrev=0", "--tags", "--match=v*.*.*", "--exclude=*/*"
+        "--abbrev=0",
+        "--tags",
+        "--match=v*.*.*",
+        "--exclude=*/*",
+        "--exclude=*-rc[0-9]*",
     )
 
     # String 'v' character

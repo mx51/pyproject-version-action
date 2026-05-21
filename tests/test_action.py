@@ -109,8 +109,22 @@ class TestGitDescribeVersion:
         result = action.git_describe_version()
         assert result == "1.2.3"
         mock_git.describe.assert_called_once_with(
-            "--abbrev=0", "--tags", "--match=v*.*.*", "--exclude=*/*"
+            "--abbrev=0",
+            "--tags",
+            "--match=v*.*.*",
+            "--exclude=*/*",
+            "--exclude=*-rc[0-9]*",
         )
+
+    @patch("action.Repo")
+    def test_git_describe_excludes_rc_tags(self, mock_repo):
+        mock_git = MagicMock()
+        mock_git.describe.return_value = "v1.2.3"
+        mock_repo.return_value.git = mock_git
+
+        action.git_describe_version()
+        args = mock_git.describe.call_args.args
+        assert "--exclude=*-rc[0-9]*" in args
 
 
 class TestReadPrTitle:
