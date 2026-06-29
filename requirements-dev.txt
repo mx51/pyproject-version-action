@@ -1,5 +1,5 @@
-coverage==7.14.2,
+coverage==7.14.3,
 mypy==2.1.0,
 pytest==9.1.1,
 pytest_mock==3.15.1,
-ruff==0.15.18
+ruff==0.15.20
