@@ -19,11 +19,11 @@ Issues = "https://github.com/mx51/pyproject-version-action/issues"
 
 [dependency-groups]
 dev = [
-    "coverage==7.17.3",
+    "coverage==7.17.4",
     "mypy==2.4.1",
     "pytest==9.2.0",
     "pytest_mock==3.17.0",
-    "ruff==0.17.5",
+    "ruff==0.17.6",
 ]
 
 # The Action runs action.py directly. It is not a package to build or install.
