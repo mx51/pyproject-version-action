@@ -1,61 +1,60 @@
 import os
-import pytest
-import sys
-from unittest.mock import patch, mock_open, MagicMock
+from unittest.mock import MagicMock, mock_open, patch
 
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
+import pytest
+
 import action
 
 
 class TestIncrementTag:
-    def test_increment_major(self):
+    def test_increment_major(self) -> None:
         result = action.increment_tag("1.2.3", 0)
         assert result == "2.0.0"
 
-    def test_increment_minor(self):
+    def test_increment_minor(self) -> None:
         result = action.increment_tag("1.2.3", 1)
         assert result == "1.3.0"
 
-    def test_increment_patch(self):
+    def test_increment_patch(self) -> None:
         result = action.increment_tag("1.2.3", 2)
         assert result == "1.2.4"
 
-    def test_increment_from_zero(self):
+    def test_increment_from_zero(self) -> None:
         result = action.increment_tag("0.0.1", 0)
         assert result == "1.0.0"
 
 
 class TestDetermineNextVersion:
-    def test_major_increment(self):
+    def test_major_increment(self) -> None:
         result = action.determine_next_version("1.2.3", "[major] Add new feature")
         assert result == "2.0.0"
 
-    def test_minor_increment(self):
+    def test_minor_increment(self) -> None:
         result = action.determine_next_version("1.2.3", "[minor] Update API")
         assert result == "1.3.0"
 
-    def test_patch_increment(self):
+    def test_patch_increment(self) -> None:
         result = action.determine_next_version("1.2.3", "[patch] Fix bug")
         assert result == "1.2.4"
 
-    def test_notag_no_increment(self):
+    def test_notag_no_increment(self) -> None:
         result = action.determine_next_version("1.2.3", "[notag] Documentation update")
         assert result == "1.2.3"
 
-    def test_invalid_tag_exits(self):
+    def test_invalid_tag_exits(self) -> None:
         with pytest.raises(SystemExit):
             action.determine_next_version("1.2.3", "No valid tag")
 
 
 class TestGetPrNumber:
     @patch("action.get_env_var")
-    def test_valid_pr_ref(self, mock_get_env_var):
+    def test_valid_pr_ref(self, mock_get_env_var: MagicMock) -> None:
         mock_get_env_var.return_value = "refs/pull/123/merge"
         result = action.get_pr_number()
         assert result == 123
 
     @patch("action.get_env_var")
-    def test_invalid_pr_ref_exits(self, mock_get_env_var):
+    def test_invalid_pr_ref_exits(self, mock_get_env_var: MagicMock) -> None:
         mock_get_env_var.return_value = "refs/heads/main"
         with pytest.raises(SystemExit):
             action.get_pr_number()
@@ -63,23 +62,23 @@ class TestGetPrNumber:
 
 class TestGetEnvVar:
     @patch.dict(os.environ, {"TEST_VAR": "test_value"})
-    def test_existing_env_var(self):
+    def test_existing_env_var(self) -> None:
         result = action.get_env_var("TEST_VAR")
         assert result == "test_value"
 
     @patch.dict(os.environ, {}, clear=True)
-    def test_missing_env_var_strict(self):
+    def test_missing_env_var_strict(self) -> None:
         with pytest.raises(SystemExit):
             action.get_env_var("MISSING_VAR")
 
     @patch.dict(os.environ, {}, clear=True)
-    def test_missing_env_var_not_strict(self):
+    def test_missing_env_var_not_strict(self) -> None:
         result = action.get_env_var("MISSING_VAR", strict=False)
         assert result is None
 
     @patch.dict(os.environ, {}, clear=True)
     @patch("builtins.print")
-    def test_missing_github_token_shows_help(self, mock_print):
+    def test_missing_github_token_shows_help(self, mock_print: MagicMock) -> None:
         with pytest.raises(SystemExit):
             action.get_env_var("GITHUB_TOKEN")
 
@@ -87,13 +86,13 @@ class TestGetEnvVar:
 
 
 class TestReadProjectVersion:
-    def test_read_valid_pyproject_toml(self):
+    def test_read_valid_pyproject_toml(self) -> None:
         toml_content = b'[project]\nversion = "1.2.3"\n'
         with patch("builtins.open", mock_open(read_data=toml_content)):
             result = action.read_project_version()
             assert result == "1.2.3"
 
-    def test_read_missing_file(self):
+    def test_read_missing_file(self) -> None:
         with patch("builtins.open", side_effect=FileNotFoundError):
             with pytest.raises(FileNotFoundError):
                 action.read_project_version()
@@ -101,7 +100,7 @@ class TestReadProjectVersion:
 
 class TestGitDescribeVersion:
     @patch("action.Repo")
-    def test_git_describe_with_v_prefix(self, mock_repo):
+    def test_git_describe_with_v_prefix(self, mock_repo: MagicMock) -> None:
         mock_git = MagicMock()
         mock_git.describe.return_value = "v1.2.3"
         mock_repo.return_value.git = mock_git
@@ -117,7 +116,7 @@ class TestGitDescribeVersion:
         )
 
     @patch("action.Repo")
-    def test_git_describe_excludes_rc_tags(self, mock_repo):
+    def test_git_describe_excludes_rc_tags(self, mock_repo: MagicMock) -> None:
         mock_git = MagicMock()
         mock_git.describe.return_value = "v1.2.3"
         mock_repo.return_value.git = mock_git
@@ -132,8 +131,8 @@ class TestReadPrTitle:
     @patch("action.get_pr_number")
     @patch("action.github.Github")
     def test_read_pr_title_success(
-        self, mock_github, mock_get_pr_number, mock_get_env_var
-    ):
+        self, mock_github: MagicMock, mock_get_pr_number: MagicMock, mock_get_env_var: MagicMock
+    ) -> None:
         mock_get_env_var.side_effect = lambda var: {
             "GITHUB_TOKEN": "fake_token",
             "GITHUB_REPOSITORY": "owner/repo",
@@ -157,7 +156,7 @@ class TestReadPrTitle:
 
 class TestMain:
     @patch("action.get_env_var")
-    def test_main_exits_on_master_branch(self, mock_get_env_var):
+    def test_main_exits_on_master_branch(self, mock_get_env_var: MagicMock) -> None:
         mock_get_env_var.return_value = "master"
         with pytest.raises(SystemExit):
             action.main()
@@ -166,8 +165,8 @@ class TestMain:
     @patch("action.read_project_version")
     @patch("action.read_next_version")
     def test_main_version_mismatch_exits(
-        self, mock_read_next, mock_read_project, mock_get_env_var
-    ):
+        self, mock_read_next: MagicMock, mock_read_project: MagicMock, mock_get_env_var: MagicMock
+    ) -> None:
         mock_get_env_var.return_value = "refs/pull/123/merge"
         mock_read_project.return_value = "1.2.3"
         mock_read_next.return_value = "1.2.4"
@@ -180,8 +179,12 @@ class TestMain:
     @patch("action.read_next_version")
     @patch("builtins.print")
     def test_main_version_match_success(
-        self, mock_print, mock_read_next, mock_read_project, mock_get_env_var
-    ):
+        self,
+        mock_print: MagicMock,
+        mock_read_next: MagicMock,
+        mock_read_project: MagicMock,
+        mock_get_env_var: MagicMock,
+    ) -> None:
         mock_get_env_var.return_value = "refs/pull/123/merge"
         mock_read_project.return_value = "1.2.4"
         mock_read_next.return_value = "1.2.4"
@@ -193,7 +196,7 @@ class TestMain:
 
 
 class TestDie:
-    def test_die_exits_with_messages(self):
+    def test_die_exits_with_messages(self) -> None:
         with patch("builtins.print") as mock_print:
             with pytest.raises(SystemExit) as exc_info:
                 action.die(["Error message 1", "Error message 2"])

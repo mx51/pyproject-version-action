@@ -4,12 +4,25 @@ include Makehelp.mk
 
 ###Core
 
+## Create uv.lock for venv
+uvsync:
+	uv sync --no-install-project --all-extras --upgrade
+	uv lock --check
+.PHONY: uvsync
+
+
 ## Create/activate python virtualenv
 venv:
-	python3 -m venv .venv && . .venv/bin/activate && \
-	pip install --upgrade pip && \
-	pip install -r requirements.txt -r requirements-dev.txt
+	uv sync --no-install-project --frozen
 .PHONY: venv
+
+
+## Perform unit tests
+test:
+	uv run coverage run -m pytest -v
+	uv run coverage xml -o reports/coverage.xml
+	uv run coverage report
+.PHONY: test
 
 
 ## Perform fmt, lint and type checks
@@ -17,42 +30,47 @@ check: check-fmt check-lint check-type
 .PHONY: check
 
 
-## Format python code using black
-fmt:
-	. .venv/bin/activate && ruff format . && ruff check --fix .
-.PHONY: fmt
-
-
-## Perform code format using black
+## Perform code format using ruff
 check-fmt:
-	. .venv/bin/activate && ruff format --check .
+	uv run ruff format --check action.py tests
 .PHONY: check-fmt
 
 
-## Perform pylint check
+## Perform ruff check
 check-lint:
-	. .venv/bin/activate && ruff check .
+	uv run ruff check .
 .PHONY: check-lint
 
 
 ## Perform mypy check
 check-type:
-	. .venv/bin/activate && mypy .
+	uv run mypy action.py tests
 .PHONY: check-type
 
 
-
-## Perform unit tests
-test:
-	. .venv/bin/activate && \
-	coverage run -m pytest -v && \
-	coverage xml -o reports/coverage.xml
-.PHONY: test
+## Format python code using ruff
+fmt:
+	uv run ruff format action.py tests
+	uv run ruff check --fix .
+.PHONY: fmt
 
 
-## Clean python artefacts
+## Fix linting issues with ruff
+fix:
+	uv run ruff check --fix .
+.PHONY: fix
+
+
+## Apply unsafe-fixes with ruff
+unsafefixes:
+	uv run ruff check --unsafe-fixes .
+.PHONY: unsafefixes
+
+
+## Clean generated resources
 clean:
-	@rm -rf .pytest_cache .ruff_cache reports
+	@find . -type f -name "*.pyc" -delete
+	@find . -type d -name "__pycache__" -delete
+	@rm -rf .pytest_cache .ruff_cache .mypy_cache .coverage reports
 	@echo "Cleanup complete."
 .PHONY: clean
-

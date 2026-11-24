@@ -1,0 +1,98 @@
+[project]
+name = "pyproject-version-action"
+version = "1.0.0"
+authors = [
+  { name="Adam Wilmore", email="adam@mx51.io" },
+]
+description = "Ensures the next Git tag version in pyproject.toml aligns with label used in Pull-Request title."
+readme = "README.md"
+requires-python = ">=3.14"
+license = "MIT"
+dependencies = [
+    "GitPython==3.2.1",
+    "PyGithub==2.10.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/mx51/pyproject-version-action"
+Issues = "https://github.com/mx51/pyproject-version-action/issues"
+
+[dependency-groups]
+dev = [
+    "coverage==7.17.3",
+    "mypy==2.4.1",
+    "pytest==9.2.0",
+    "pytest_mock==3.17.0",
+    "ruff==0.17.5",
+]
+
+# The Action runs action.py directly. It is not a package to build or install.
+[tool.uv]
+package = false
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+
+[tool.ruff]
+line-length = 100
+
+[tool.coverage.run]
+source = ["."]
+omit = ["tests/*"]
+
+[tool.ruff.lint]
+select = ["F", "E", "W", "I", "UP", "FA", "ANN", "B", "TID", "ICN"]
+
+[tool.ruff.lint.per-file-ignores]
+# Relax rules for tests
+"tests/**/*.py" = ["ANN201", "ANN001"]
+
+[tool.ruff.lint.isort]
+force-single-line = false
+force-sort-within-sections = true
+lines-after-imports = 2
+known-first-party = ["action", "tests"]
+section-order = [
+    "future",
+    "standard-library",
+    "third-party",
+    "first-party",
+    "local-folder"
+]
+
+[tool.ruff.lint.flake8-tidy-imports]
+ban-relative-imports = "all"
+
+[tool.mypy]
+python_version = "3.14"
+
+# Disallow untyped definitions and calls
+disallow_untyped_calls = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+disallow_untyped_decorators = true
+
+# Disallow 'Any' types
+disallow_any_generics = true
+disallow_subclassing_any = true
+warn_return_any = true
+
+# Strictness flags
+no_implicit_optional = true
+strict_optional = true
+strict_equality = true
+
+# Warnings
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_no_return = true
+warn_unreachable = true
+warn_unused_configs = true
+
+# Error reporting
+show_error_codes = true
+show_column_numbers = true
+
+# Imports
+no_implicit_reexport = true
