@@ -58,8 +58,11 @@ jobs:
 
 ### Prerequisites
 
-- Python 3.13+
-- Git repository with tags following `v*.*.*` pattern
+- Python 3.14 or later
+- [uv](https://docs.astral.sh/uv/)
+- A Git repository with tags that follow the `v*.*.*` pattern
+
+The Action itself installs uv and runs `action.py` with Python 3.14. The packages come from `uv.lock`.
 
 ### Setup
 
@@ -69,32 +72,32 @@ jobs:
    cd pyproject-version-action
    ```
 
-2. Create and activate virtual environment:
+2. Create the virtual environment in `.venv/` from `uv.lock`:
    ```bash
    make venv
-   source .venv/bin/activate
    ```
 
 ### Development Commands
 
 | Command | Description |
 |---------|-------------|
-| `make venv` | Create/activate Python virtual environment |
+| `make uvsync` | Upgrade the packages and write a new `uv.lock` |
+| `make venv` | Create the virtual environment from `uv.lock` |
 | `make test` | Run unit tests with coverage |
-| `make fmt` | Format code using ruff |
+| `make fmt` | Format the code and apply lint fixes with ruff |
 | `make check` | Run format, lint, and type checks |
 | `make check-fmt` | Check code formatting |
 | `make check-lint` | Run linting checks |
-| `make check-type` | Run type checking |
-| `make clean` | Clean Python artifacts |
+| `make check-type` | Run type checking with mypy |
+| `make clean` | Remove generated files |
+
+Each `make` target runs its tools with `uv run`. If `.venv/` does not exist, uv creates it.
 
 ### Running Tests
 
-Run tests using either method:
-
 ```bash
 # Direct pytest execution
-.venv/bin/python3 -m pytest tests -v
+uv run pytest -v
 
 # Via Makefile (includes coverage)
 make test
@@ -105,12 +108,11 @@ make test
 ```
 ├── action.py              # Main action script
 ├── action.yaml            # GitHub Action configuration
-├── requirements.txt       # Runtime dependencies
-├── requirements-dev.txt   # Development dependencies
+├── pyproject.toml         # Project metadata, dependencies and tool configuration
+├── uv.lock                # Locked package versions
 ├── tests/
 │   └── test_action.py     # Unit tests
 ├── reports/
 │   └── coverage.xml       # Test coverage report
 └── Makefile               # Development commands
 ```
-

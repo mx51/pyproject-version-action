@@ -1,14 +1,16 @@
 #!/usr/bin/env python3
 
 
-from git import Repo
-
-import github
 import os
 import re
 import signal
 import sys
 import tomllib
+from types import FrameType
+from typing import Literal, NoReturn, overload
+
+from git import Repo
+import github
 
 
 ###
@@ -23,7 +25,7 @@ PYPROJECT_TOML = "pyproject.toml"
 ###
 
 
-def main():
+def main() -> None:
     # Only execute on pull requests
     if get_env_var("GITHUB_REF") == "master":
         print("[INFO]  master branch detected")
@@ -51,7 +53,7 @@ def main():
 
 
 # Use "git describe" to retrieve most recent tag
-def read_next_version():
+def read_next_version() -> str:
     # Get latest tag
     git_describe = git_describe_version()
 
@@ -61,16 +63,16 @@ def read_next_version():
     # Parse PR header and increment tag
     next_version = determine_next_version(git_describe, pr_title)
     print("[DEBUG]  ")
-    print("[DEBUG]  pr title             : '%s'" % pr_title)
-    print("[DEBUG]  previous tag version : %s" % git_describe)
-    print("[DEBUG]  next tag version     : %s" % next_version)
+    print(f"[DEBUG]  pr title             : '{pr_title}'")
+    print(f"[DEBUG]  previous tag version : {git_describe}")
+    print(f"[DEBUG]  next tag version     : {next_version}")
     print("[DEBUG]  ")
 
     return next_version
 
 
 # Use PR title to determine next incremented version
-def determine_next_version(git_describe, pr_title):
+def determine_next_version(git_describe: str, pr_title: str) -> str:
     # Work out which version part to increment
     if "[major]" in pr_title.lower():
         return increment_tag(git_describe, 0)
@@ -85,15 +87,11 @@ def determine_next_version(git_describe, pr_title):
         return git_describe
 
     else:
-        die(
-            [
-                "One of the following - [major], [minor], [patch], [notag] - not found in PR title"
-            ]
-        )
+        die(["One of the following - [major], [minor], [patch], [notag] - not found in PR title"])
 
 
 # Increment tag based on PR title
-def increment_tag(git_describe, position):
+def increment_tag(git_describe: str, position: int) -> str:
     # Split tag
     semver = git_describe.split(".")
 
@@ -110,10 +108,10 @@ def increment_tag(git_describe, position):
 
 
 # Call git describe
-def git_describe_version():
+def git_describe_version() -> str:
     # Read tag using git describe
     repo = Repo()
-    git_tag = repo.git.describe(
+    git_tag: str = repo.git.describe(
         "--abbrev=0",
         "--tags",
         "--match=v*.*.*",
@@ -126,7 +124,7 @@ def git_describe_version():
 
 
 # Read PR title using github client
-def read_pr_title():
+def read_pr_title() -> str:
     # Load github params
     token = get_env_var("GITHUB_TOKEN")
     repo_name = get_env_var("GITHUB_REPOSITORY")
@@ -142,7 +140,7 @@ def read_pr_title():
 
 
 # Extract PR number from GITHUB_REF
-def get_pr_number():
+def get_pr_number() -> int:
     # Look up from env var (eg.: "refs/pull/123/merge")
     pr_ref = get_env_var("GITHUB_REF")
 
@@ -157,15 +155,22 @@ def get_pr_number():
 
 
 # Extract version value from pyproject.toml
-def read_project_version():
+def read_project_version() -> str:
     with open(PYPROJECT_TOML, "rb") as config:
         data = tomllib.load(config)
 
-    return data["project"]["version"]
+    version: str = data["project"]["version"]
+    return version
 
 
 # Look up env var
-def get_env_var(env_var_name, strict=True):
+@overload
+def get_env_var(env_var_name: str) -> str: ...
+@overload
+def get_env_var(env_var_name: str, strict: Literal[True]) -> str: ...
+@overload
+def get_env_var(env_var_name: str, strict: bool) -> str | None: ...
+def get_env_var(env_var_name: str, strict: bool = True) -> str | None:
     # Check env var
     value = os.getenv(env_var_name)
 
@@ -187,7 +192,7 @@ def get_env_var(env_var_name, strict=True):
 
 
 # Error message util
-def die(messages):
+def die(messages: list[str]) -> NoReturn:
     # Display message
     print("[ERROR]")
 
@@ -201,7 +206,7 @@ def die(messages):
 
 
 # Handle interrupt
-def signal_handler(_, __):
+def signal_handler(_: int, __: FrameType | None) -> None:
     print(" ")
     sys.exit(0)
 

@@ -9,15 +9,13 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - name: Setup Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: '3.13'
+    - name: Setup uv
+      uses: astral-sh/setup-uv@v5
 
-    - run: pip install -r ${{ github.action_path }}/requirements.txt
-      shell: bash
-
-    - run: ${{ github.action_path }}/action.py
+    # The working directory stays in the repo of the caller, so that action.py reads its pyproject.toml.
+    - run: >-
+        uv run --project "${{ github.action_path }}" --frozen --no-dev --python 3.14
+        python "${{ github.action_path }}/action.py"
       shell: bash
       env:
         GITHUB_TOKEN: ${{ inputs.repo-token }}
